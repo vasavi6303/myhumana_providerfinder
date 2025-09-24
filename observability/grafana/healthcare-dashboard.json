@@ -1,0 +1,16 @@
+{
+  "dashboard": {
+    "title": "Provider Finder - Overview",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Provider Search Latency",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(healthpilot_request_latency_seconds_bucket[5m])) by (le))"
+          }
+        ]
+      }
+    ]
+  }
+}

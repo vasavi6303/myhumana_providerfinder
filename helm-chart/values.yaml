@@ -1,0 +1,25 @@
+replicaCount: 2
+image:
+  repository: <ECR_REGISTRY>/<ECR_REPOSITORY>
+  tag: latest
+service:
+  type: ClusterIP
+  port: 8080
+env:
+  MOCK_HP: "true"
+  HEALTHPILOT_BASE: "https://healthpilot.example.com"
+  HEALTHPILOT_API_KEY: ""
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 60
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+servicemonitor:
+  enabled: true

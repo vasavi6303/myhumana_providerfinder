@@ -1,0 +1,29 @@
+pipeline {
+  agent any
+  environment {
+    ECR = '123456789012.dkr.ecr.us-east-1.amazonaws.com/providerfinder'
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Test') {
+      steps {
+        sh 'python -m pip install -r src/requirements.txt'
+        sh 'pytest -q src'
+      }
+    }
+    stage('Build & Scan') {
+      steps {
+        sh 'docker build -t ${ECR}:$BUILD_NUMBER .'
+        sh 'bandit -r src || true'
+      }
+    }
+    stage('Push & Deploy') {
+      steps {
+        sh 'aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR%/*}'
+        sh 'docker push ${ECR}:$BUILD_NUMBER'
+        sh 'aws eks update-kubeconfig --name myhumana-eks'
+        sh 'helm upgrade --install providerfinder helm-chart --namespace myhumana --set image.repository=${ECR%/*} --set image.tag=$BUILD_NUMBER'
+      }
+    }
+  }
+}

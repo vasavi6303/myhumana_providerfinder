@@ -1,0 +1,15 @@
+__pycache__/
+.pytest_cache/
+.venv/
+.env
+.DS_Store
+*.pyc
+.idea/
+.vscode/
+/dist
+/build
+/node_modules
+*/.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.secrets/

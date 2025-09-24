@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: providerfinder-rules
+spec:
+  groups:
+    - name: providerfinder.rules
+      rules:
+        - alert: HighProviderSearchLatency
+          expr: histogram_quantile(0.95, sum(rate(healthpilot_request_latency_seconds_bucket[5m])) by (le)) > 1
+          for: 2m
+          labels:
+            severity: page
+          annotations:
+            summary: "High provider search latency"
+            description: "95th percentile latency > 1s for 2m"

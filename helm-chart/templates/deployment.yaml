@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "providerfinder.fullname" . | default "providerfinder" }}
+  labels:
+    app: providerfinder
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: providerfinder
+  template:
+    metadata:
+      labels:
+        app: providerfinder
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: /metrics
+    spec:
+      serviceAccountName: providerfinder-sa
+      containers:
+        - name: providerfinder
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MOCK_HP
+              value: "{{ .Values.env.MOCK_HP }}"
+            - name: HEALTHPILOT_BASE
+              value: "{{ .Values.env.HEALTHPILOT_BASE }}"
+            - name: HEALTHPILOT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: providerfinder-secrets
+                  key: HEALTHPILOT_API_KEY
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
